@@ -12,28 +12,34 @@ public class Main {
 
         Scanner input = new Scanner(System.in);
 
-        Indicators out;
+        Indicators out = null;
         int numberOfAttempts = 0;
 
         do {
-            System.out.print("Enter a Letter ");
+            System.out.print("Enter a letter in the English alphabet ");
             char letter = input.next().charAt(0);
 
-            letter = Character.toUpperCase(letter);
+            // Validation
+            if (Character.isLetter(letter)) {
+                letter = Character.toUpperCase(letter);
 
-            ComparingAlgo comparingAlgo1= new ComparingAlgo(letter, random_Number);
+                ComparingAlgo comparingAlgo1= new ComparingAlgo(letter, random_Number);
 
-            out= comparingAlgo1.compare();
-            numberOfAttempts++;
+                out= comparingAlgo1.compare();
+                numberOfAttempts++;
 
-            //IF letter match
-            if (out==Indicators.FOUND){
-                System.out.println("You got it!");
-                System.out.println("Number of attempts: " + numberOfAttempts);
-            }
-            //Show the indicators
-            else {
-                System.out.println(out);
+                //IF letter match
+                if (out==Indicators.FOUND){
+                    System.out.println("You got it!");
+                    System.out.println("Number of attempts: " + numberOfAttempts);
+                }
+                //Show the indicators
+                else {
+                    System.out.println(out);
+                }
+
+            } else {
+                System.out.println("Invalid input! Please enter a letter.");
             }
         }
        while (out != Indicators.FOUND);
