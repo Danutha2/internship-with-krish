@@ -2,9 +2,9 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom, timeout, catchError, of } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import { TripResponseV1Dto } from './DTO/trip-response-v1.dto';
-import { HotelDTO as Hotel } from './DTO/hotelDTO';
-import { flightInfo as flight } from './DTO/flightDTO';
+import { TripResponseV1Dto } from '../DTO/trip-response-v1.dto';
+import { HotelDTO as Hotel } from '../DTO/hotelDTO';
+import { flightInfo as flight } from '../DTO/flightDTO';
 
 @Injectable()
 export class ScatterGatherService {

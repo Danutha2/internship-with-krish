@@ -3,4 +3,6 @@ export class HotelDTO{
     rating:number
     pricePErNight:number
     location:string
+    lateCheckIn:boolean
 }
+

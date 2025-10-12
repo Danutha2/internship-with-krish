@@ -1,22 +1,24 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity()
-export class Hotel{
+export class Hotel {
     @PrimaryGeneratedColumn()
-    id:number
+    id: number
     @Column()
-    name:string
+    name: string
     @Column()
-    rating:number
+    rating: number
     @Column()
-    pricePerNight:number
+    pricePerNight: number
     @Column()
-    location:string
+    location: string
     @Column()
-    destinationType:destination
+    destinationType: destination
+    @Column({ type: 'boolean' })
+    lateCheckIn: boolean;
 }
 
-export enum destination{
-    COASTAL='COASTAL',
-    INLAND='INLAND'
+export enum destination {
+    COASTAL = 'COASTAL',
+    INLAND = 'INLAND'
 }
