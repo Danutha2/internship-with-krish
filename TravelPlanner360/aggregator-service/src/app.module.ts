@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ScatterGatherModule } from './scatter-gather/scatter-gather.module';
+import { SearchModule } from './search/searchmodule';
 import { HttpModule } from '@nestjs/axios';
 
-import { ChainingModule } from './chaining/chaining.module';
-import { ChainingController } from './chaining/chaining.controller';
+import { CheapestrouteModule } from './Cheapest-route/cheapest-route.module';
+import { ContextualModule } from './Contextual/contextual.module';
 
 
 @Module({
-  imports: [ScatterGatherModule,HttpModule, ChainingModule],
+  imports: [SearchModule,HttpModule, CheapestrouteModule, ContextualModule],
   controllers: [],
   providers: [],
 })

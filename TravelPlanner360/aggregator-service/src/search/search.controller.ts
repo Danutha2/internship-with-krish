@@ -1,10 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ScatterGatherService } from './scatter-gather.service';
+import { SearchService } from './search.service';
 
 @Controller('v1/trips')
-export class ScatterGatherController {
+export class SearchController {
 
-    constructor(private sgService:ScatterGatherService){
+    constructor(private sgService:SearchService){
 
     }
 

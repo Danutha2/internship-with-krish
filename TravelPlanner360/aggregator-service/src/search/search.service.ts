@@ -7,7 +7,7 @@ import { HotelDTO as Hotel } from '../DTO/hotelDTO';
 import { flightInfo as flight } from '../DTO/flightDTO';
 
 @Injectable()
-export class ScatterGatherService {
+export class SearchService {
   constructor(private readonly httpService: HttpService) {}
 
   private async callWithTimeout<T>(url: string): Promise<{ data: T | null; degraded: boolean }> {

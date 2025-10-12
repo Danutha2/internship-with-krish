@@ -4,10 +4,10 @@ import { firstValueFrom, catchError, of } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { flightInfo } from '../DTO/flightDTO';
 import { HotelDTO } from '../DTO/hotelDTO';
-import { RouteRequestDTO } from '../DTO/cheapestRoute.req.DTO';
+import { TripSearchRequestDTO } from '../DTO/cheapestRoute.req.DTO';
 
 @Injectable()
-export class ChainingService {
+export class CheapestrouteService {
   constructor(private readonly httpService: HttpService) {}
 
   private async callService<T>(url: string): Promise<T | null> {
@@ -18,7 +18,7 @@ export class ChainingService {
     return result ? (result as AxiosResponse<T>).data : null;
   }
 
-  async getCheapestRoute1(routeReq: RouteRequestDTO) {
+  async getCheapestRouteV1(routeReq: TripSearchRequestDTO) {
     // Step 1: Get all flights
     const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${routeReq.destination}&from=${routeReq.from}&departtime=${routeReq.date}`;
     const flights: flightInfo[] = (await this.callService<flightInfo[]>(flightServiceURL)) ?? [];
