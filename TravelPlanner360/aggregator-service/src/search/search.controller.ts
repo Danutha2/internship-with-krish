@@ -1,15 +1,33 @@
-import { Controller, Get, Query } from '@nestjs/common';
+// v1-search.controller.ts
+import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { SearchService } from './search.service';
 
 @Controller('v1/trips')
 export class SearchController {
+  private readonly logger = new Logger(SearchController.name);
+  private static requestCount = 0;
 
-    constructor(private sgService:SearchService){
+  constructor(private readonly sgService: SearchService) {}
 
-    }
+  @Get('/search')
+  async tripsSearch(
+    @Query('from') from: string,
+    @Query('destination') destination: string,
+    @Query('date') date: Date,
+    @Query('location') location: string,
+  ) {
+    SearchController.requestCount++;
+    this.logger.log(
+      `V1 search endpoint hit | count=${SearchController.requestCount} | from=${from} | destination=${destination} | date=${date} | location=${location}`,
+    );
 
-    @Get('/search')
-    tripsSearch(@Query('from') from:string, @Query('destination') destination:string, @Query('date') date:Date,@Query('location') location:string){
-        return this.sgService.tripSearchV1(destination,from,date,location);
-    }
+    const result = await this.sgService.tripSearchV1(destination, from, date, location);
+
+    // Log degraded states for each service
+    this.logger.warn(
+      `Degraded status | flight=${result.degraded.flight} | hotel=${result.degraded.hotel}`,
+    );
+
+    return result;
+  }
 }
