@@ -12,7 +12,7 @@ import { CircuitBreaker } from 'src/Circuit-Breaker/circuitBreaker';
 @Injectable()
 export class SearchService {
   private readonly logger = new Logger(SearchService.name);
-  private  weatherBreaker: CircuitBreaker<Weather[]>;
+  private weatherBreaker: CircuitBreaker<Weather[]>;
 
   constructor(private readonly httpService: HttpService) {
     this.weatherBreaker = new CircuitBreaker<Weather[]>({
@@ -20,7 +20,10 @@ export class SearchService {
       requestVolume: 20, // last 20 requests
       cooldown: 30000, // 30 seconds
       halfOpenRequests: 5,
-      fallback: () => [{ summary: 'unavailable', degraded: true } as any],
+      fallback: () => {
+        this.logger.warn('Using fallback weather data');
+        return [{ summary: 'Weather data unavailable', degraded: true } as any];
+      },
     });
   }
 
@@ -83,30 +86,28 @@ export class SearchService {
     }
   }
 
-  // ----------------- Weather Service -----------------
+  // ----------------- Weather Service (Clean version for circuit breaker) -----------------
   private async callWeatherService(url: string): Promise<Weather[]> {
-    try {
-      this.logger.log(`Calling weather service: ${url}`);
-      const obs$ = this.httpService.get<Weather[]>(url).pipe(
-        timeout(1000),
-        catchError(err => {
-          this.logger.warn(`Weather service failed or timed out: ${err?.message || err}`);
-          return of(null);
-        })
-      );
+    this.logger.log(`Calling weather service: ${url}`);
+    
+    const obs$ = this.httpService.get<Weather[]>(url).pipe(
+      timeout(1000),
+      catchError(err => {
+        this.logger.debug(`Weather service request failed: ${err?.message || err}`);
+        // Don't return null here, throw the error so circuit breaker can handle it
+        throw new Error(`Weather service error: ${err?.message || 'Request failed'}`);
+      })
+    );
 
-      const result = await firstValueFrom(obs$);
-      if (!result || !result.data) {
-        this.logger.warn('Weather fetch returned empty or null data');
-        throw new Error('Weather fetch failed: Empty or null response');
-      }
-
-      this.logger.log(`Weather service returned ${result.data.length} entries`);
-      return result.data;
-    } catch (error) {
-      this.logger.error(`Error in callWeatherService: ${error.message}`, error.stack);
-      throw error;
+    const result = await firstValueFrom(obs$);
+    
+    if (!result || !result.data || result.data.length === 0) {
+      this.logger.debug('Weather fetch returned empty or null data');
+      throw new Error('Weather service returned empty response');
     }
+
+    this.logger.log(`Weather service returned ${result.data.length} entries`);
+    return result.data;
   }
 
   // ----------------- V2: Flights + Hotels + Weather -----------------
@@ -121,13 +122,8 @@ export class SearchService {
       const [flightResult, hotelResult, weatherResult] = await Promise.all([
         this.callWithTimeout<Flight[]>(flightServiceURL),
         this.callWithTimeout<Hotel[]>(hotelServiceURL),
-        // Wrap circuit breaker call in try/catch to handle failures gracefully
-        this.weatherBreaker.exec(() =>
-          this.callWeatherService(weatherServiceURL).catch(err => {
-            this.logger.warn(`Weather service failed, using fallback: ${err.message}`);
-            return this.weatherBreaker.getFallback();
-          })
-        ),
+        // Circuit breaker handles all errors and fallback logic
+        this.weatherBreaker.exec(() => this.callWeatherService(weatherServiceURL)),
       ]);
 
       const matchedFlights = (flightResult.data ?? []).filter(f => f.destination === location);
