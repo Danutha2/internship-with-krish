@@ -35,7 +35,6 @@ export class CircuitBreaker<T> {
     if (this.failures.length > this.options.requestVolume) {
       this.failures.shift();
     }
-    this.logger.debug(`Failures recorded: ${this.failures.length}`);
     this.logger.debug(
       `Recorded result: ${success ? 'success' : 'failure'}, current failure rate: ${this.failureRate().toFixed(2)}`
     );
@@ -64,19 +63,24 @@ export class CircuitBreaker<T> {
   }
 
   private evaluateHalfOpenState() {
-    const failureRate = this.halfOpenFailures / this.halfOpenCounter;
-    if (failureRate <= this.options.threshold) {
+    this.logger.debug(`Half Open Failure: ${this.halfOpenFailures}`)
+    this.logger.debug(`Half Open Counter :${this.halfOpenCounter}`)
+
+    const failureR = this.halfOpenFailures / this.halfOpenCounter;
+    this.logger.debug(`Failure Rate :${this.halfOpenCounter}`)
+
+    if (failureR <= this.options.threshold) {
       this.state = CircuitState.CLOSED;
       this.failures = [];
       this.lastStateChange = Date.now();
       this.logger.log(
-        `Circuit breaker CLOSED after HALF_OPEN. Failure rate: ${failureRate.toFixed(2)}`
+        `Circuit breaker CLOSED after HALF_OPEN. Failure rate: ${failureR.toFixed(2)}`
       );
     } else {
       this.state = CircuitState.OPEN;
       this.lastStateChange = Date.now();
       this.logger.error(
-        `Circuit breaker REOPENED after HALF_OPEN. Failure rate ${failureRate.toFixed(2)} exceeded threshold ${this.options.threshold}`
+        `Circuit breaker REOPENED after HALF_OPEN. Failure rate ${failureR.toFixed(2)} exceeded threshold ${this.options.threshold}`
       );
     }
   }

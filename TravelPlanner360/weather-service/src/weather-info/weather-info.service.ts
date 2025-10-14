@@ -23,17 +23,17 @@ export class WeatherInfoService {
       const delayMs = Number(process.env.WEATHER_DELAY_MS) || 0;
       const failRate = Number(process.env.WEATHER_FAIL_RATE) || 0;
 
-      // Artificial delay
-      if (delayMs > 0) {
-        this.logger.log(`Simulating delay of ${delayMs}ms`);
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
+      // // Artificial delay
+      // if (delayMs > 0) {
+      //   this.logger.log(`Simulating delay of ${delayMs}ms`);
+      //   await new Promise(resolve => setTimeout(resolve, delayMs));
+      // }
 
-      // Random failure
-      if (Math.random() < failRate) {
-        this.logger.warn('Simulated weather service failure');
-        throw new Error('Simulated weather service failure');
-      }
+      // // Random failure
+      // if (Math.random() < failRate) {
+      //   this.logger.warn('Simulated weather service failure');
+      //   throw new Error('Simulated weather service failure');
+      // }
 
       const weatherData = await this.weatherRepository.find();
       this.logger.log(`Returning ${weatherData.length} weather entries`);

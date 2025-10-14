@@ -10,7 +10,7 @@ const location = process.env.LOCATION;
 
 async function callApi() {
   const endpointV = `${BASE_URL}/v${API_VERSION}/trips/search?from=${from}&destination=${destination}&date=${date}&location=${location}`;
-  console.log(`Calling: ${endpoint}`);
+  console.log(`Calling: ${endpointV}`);
 
   try {
     const response = await fetch(endpointV);
