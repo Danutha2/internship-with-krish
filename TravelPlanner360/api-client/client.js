@@ -9,12 +9,11 @@ const date = process.env.DATE;
 const location = process.env.LOCATION;
 
 async function callApi() {
-  const endpoint = `${BASE_URL}/v${API_VERSION}/trips/search?from=${from}&destination=${destination}&date=${date}&location=${location}`;
-
-  console.log(`🔹 Calling: ${endpoint}`);
+  const endpointV = `${BASE_URL}/v${API_VERSION}/trips/search?from=${from}&destination=${destination}&date=${date}&location=${location}`;
+  console.log(`Calling: ${endpoint}`);
 
   try {
-    const response = await fetch(endpoint);
+    const response = await fetch(endpointV);
     const result = await response.json();
     console.log(' API Response:', result);
   } catch (error) {

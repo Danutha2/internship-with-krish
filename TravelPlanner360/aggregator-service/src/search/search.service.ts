@@ -8,23 +8,29 @@ import { flightInfo as Flight } from '../DTO/flightDTO';
 import { HotelDTO as Hotel } from '../DTO/hotelDTO';
 import { WeatherDTO as Weather } from '../DTO/weather.DTO';
 import { CircuitBreaker } from 'src/Circuit-Breaker/circuitBreaker';
+import { ConfigService } from '@nestjs/config';
+import { config } from 'process';
+
 
 @Injectable()
 export class SearchService {
   private readonly logger = new Logger(SearchService.name);
   private weatherBreaker: CircuitBreaker<Weather[]>;
 
-  constructor(private readonly httpService: HttpService) {
+
+  constructor(private readonly httpService: HttpService, private readonly configService: ConfigService,) {
     this.weatherBreaker = new CircuitBreaker<Weather[]>({
-      threshold: 0.5, // 50% failures
-      requestVolume: 20, // last 20 requests
-      cooldown: 30000, // 30 seconds
-      halfOpenRequests: 5,
+      threshold: this.configService.get<number>('CIRCUIT_THRESHOLD') || 0.5,           // default 50%
+      requestVolume: this.configService.get<number>('CIRCUIT_REQUEST_VOLUME') || 50,   // keep history of 50
+      minRequestsBeforeEvaluate: this.configService.get<number>('CIRCUIT_MIN_REQUESTS_BEFORE') || 20, // 👈 new line
+      cooldown: this.configService.get<number>('CIRCUIT_COOLDOWN') || 30000,           // default 30s
+      halfOpenRequests: this.configService.get<number>('CIRCUIT_HALF_OPEN_REQUESTS') || 5,
       fallback: () => {
         this.logger.warn('Using fallback weather data');
         return [{ summary: 'Weather data unavailable', degraded: true } as any];
       },
     });
+
   }
 
   private async callWithTimeout<T>(url: string): Promise<{ data: T | null; degraded: boolean }> {
@@ -40,7 +46,7 @@ export class SearchService {
 
       const result = await firstValueFrom(obs$);
       if (!result) {
-        this.logger.warn(`No response received from ${url}. Marking as degraded.`);
+        this.logger.log(`No response received from ${url}. Marking as degraded.`);
         return { data: null, degraded: true };
       }
 
@@ -57,7 +63,7 @@ export class SearchService {
     const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departtime=${departtime}`;
     const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${location}`;
 
-    this.logger.log(`Starting tripSearchV1 for destination=${destination}, from=${from}, location=${location}`);
+    this.logger.debug(`Starting tripSearchV1 for destination=${destination}, from=${from}, location=${location}`);
 
     try {
       const [flightResult, hotelResult] = await Promise.all([
@@ -68,7 +74,7 @@ export class SearchService {
       const matchedFlights = (flightResult.data ?? []).filter(f => f.destination === location);
       const matchedHotels = (hotelResult.data ?? []).filter(h => h.location === location);
 
-      this.logger.log(
+      this.logger.debug(
         `V1 results — Flights: ${matchedFlights.length}, Hotels: ${matchedHotels.length}, Degraded: flight=${flightResult.degraded}, hotel=${hotelResult.degraded}`
       );
 
@@ -86,27 +92,27 @@ export class SearchService {
     }
   }
 
-  // ----------------- Weather Service (Clean version for circuit breaker) -----------------
+  // ----------------- Weather Service  -----------------
   private async callWeatherService(url: string): Promise<Weather[]> {
     this.logger.log(`Calling weather service: ${url}`);
-    
+
     const obs$ = this.httpService.get<Weather[]>(url).pipe(
       timeout(1000),
       catchError(err => {
-        this.logger.debug(`Weather service request failed: ${err?.message || err}`);
-        // Don't return null here, throw the error so circuit breaker can handle it
+        this.logger.warn(`Weather service request failed: ${err?.message || err}`);
+
         throw new Error(`Weather service error: ${err?.message || 'Request failed'}`);
       })
-    );
+    ); null
 
     const result = await firstValueFrom(obs$);
-    
+
     if (!result || !result.data || result.data.length === 0) {
-      this.logger.debug('Weather fetch returned empty or null data');
+      this.logger.warn('Weather fetch returned empty or  data');
       throw new Error('Weather service returned empty response');
     }
 
-    this.logger.log(`Weather service returned ${result.data.length} entries`);
+    this.logger.debug(`Weather service returned ${result.data.length} entries`);
     return result.data;
   }
 
@@ -116,7 +122,7 @@ export class SearchService {
     const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${location}`;
     const weatherServiceURL = `http://localhost:3004/weather-info/getInfo?location=${location}`;
 
-    this.logger.log(`Starting tripSearchV2 for destination=${destination}, from=${from}, location=${location}`);
+    this.logger.debug(`Starting tripSearchV2 for destination=${destination}, from=${from}, location=${location}`);
 
     try {
       const [flightResult, hotelResult, weatherResult] = await Promise.all([
@@ -132,7 +138,7 @@ export class SearchService {
       const weatherInfo: Weather[] = weatherResult ?? [];
       const weatherDegraded = weatherInfo.some(w => (w as any).degraded === true);
 
-      this.logger.log(
+      this.logger.debug(
         `V2 results — Flights: ${matchedFlights.length}, Hotels: ${matchedHotels.length}, Weather: ${weatherInfo.length}, Degraded: flight=${flightResult.degraded}, hotel=${hotelResult.degraded}, weather=${weatherDegraded}`
       );
 

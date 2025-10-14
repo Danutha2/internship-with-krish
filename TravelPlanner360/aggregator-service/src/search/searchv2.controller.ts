@@ -1,11 +1,11 @@
-// v2-search.controller.ts
+
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { SearchService } from './search.service';
 
 @Controller('v2/trips')
 export class Searchv2Controller {
   private readonly logger = new Logger(Searchv2Controller.name);
-  private static requestCount = 0;
+  public static requestCountV2 = 0;
 
   constructor(private readonly searchService: SearchService) {}
 
@@ -17,7 +17,7 @@ export class Searchv2Controller {
     @Query('location') location: string,
   ) {
     // Increment hit count
-    Searchv2Controller.requestCount++;
+    Searchv2Controller.requestCountV2++;
 
     const startTime = Date.now();
     try {
@@ -25,7 +25,7 @@ export class Searchv2Controller {
       const duration = Date.now() - startTime;
 
       // Log completion with duration
-      this.logger.log(`V2 search endpoint hit | count=${Searchv2Controller.requestCount}| V2 search completed in ${duration}ms`);
+      this.logger.log(`V2 search endpoint hit | count=${Searchv2Controller.requestCountV2}| V2 search completed in ${duration}ms`);
 
       return result;
     } catch (err) {
@@ -34,4 +34,7 @@ export class Searchv2Controller {
       throw err;
     }
   }
+
+
+
 }

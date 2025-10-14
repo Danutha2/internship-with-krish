@@ -5,7 +5,7 @@ import { SearchService } from './search.service';
 @Controller('v1/trips')
 export class SearchController {
   private readonly logger = new Logger(SearchController.name);
-  private static requestCount = 0;
+  public static requestCount = 0;
 
   constructor(private readonly sgService: SearchService) {}
 
