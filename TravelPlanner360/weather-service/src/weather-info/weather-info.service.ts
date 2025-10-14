@@ -7,11 +7,23 @@ import { Weather } from 'src/Entity/weather';
 @Injectable()
 export class WeatherInfoService {
   private readonly logger = new Logger(WeatherInfoService.name);
+  private dynamicDelayMs: number = Number(process.env.WEATHER_DELAY_MS) || 0;
 
   constructor(
     @InjectRepository(Weather)
     private readonly weatherRepository: Repository<Weather>,
   ) {}
+
+    setDelay(ms: number) {
+    if (ms < 0) {
+      this.logger.warn('Delay cannot be negative. Keeping previous value.');
+      return;
+    }
+    this.logger.log(`Updating dynamic delay from ${this.dynamicDelayMs}ms to ${ms}ms`);
+    this.dynamicDelayMs = ms;
+    
+    return this.dynamicDelayMs
+  }
 
   /*
    * Get all weather entries
@@ -20,20 +32,20 @@ export class WeatherInfoService {
   async getWeather() {
     this.logger.log('Fetching all weather entries');
     try {
-      const delayMs = Number(process.env.WEATHER_DELAY_MS) || 0;
+      
       const failRate = Number(process.env.WEATHER_FAIL_RATE) || 0;
 
-      // // Artificial delay
-      // if (delayMs > 0) {
-      //   this.logger.log(`Simulating delay of ${delayMs}ms`);
-      //   await new Promise(resolve => setTimeout(resolve, delayMs));
-      // }
+      // Artificial delay
+      if (this.dynamicDelayMs > 0) {
+        this.logger.log(`Simulating delay of ${this.dynamicDelayMs}ms`);
+        await new Promise(resolve => setTimeout(resolve, this.dynamicDelayMs));
+      }
 
-      // // Random failure
-      // if (Math.random() < failRate) {
-      //   this.logger.warn('Simulated weather service failure');
-      //   throw new Error('Simulated weather service failure');
-      // }
+      // Random failure
+      if (Math.random() < failRate) {
+        this.logger.warn('Simulated weather service failure');
+        throw new Error('Simulated weather service failure');
+      }
 
       const weatherData = await this.weatherRepository.find();
       this.logger.log(`Returning ${weatherData.length} weather entries`);

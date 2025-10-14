@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { WeatherInfoService } from './weather-info.service';
 import { WeatherDTO } from '../DTO/weather.dto';
+import { delay } from 'rxjs';
 
 @Controller('weather-info')
 export class WeatherInfoController {
@@ -21,4 +22,10 @@ export class WeatherInfoController {
   createWeatherInfo(@Body() weatherDTO:WeatherDTO[]){
     return this.weatherInfoService.createWeatherInfor(weatherDTO);
   }
+
+  @Put('change')
+  changeDelayTime(@Query('delayms') delayMs:number){
+    return this.weatherInfoService.setDelay(delayMs);
+  }
+
 }

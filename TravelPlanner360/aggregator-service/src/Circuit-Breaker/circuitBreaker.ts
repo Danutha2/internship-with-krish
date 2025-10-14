@@ -32,7 +32,7 @@ export class CircuitBreaker<T> {
 
   private record(success: boolean) {
     this.failures.push(success ? 0 : 1);
-    if (this.failures.length > this.options.requestVolume) {
+    if (this.failures.length > this.options.minRequestsBeforeEvaluate) {
       this.failures.shift();
     }
     this.logger.debug(

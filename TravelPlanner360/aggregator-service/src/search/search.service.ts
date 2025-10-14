@@ -66,6 +66,7 @@ export class SearchService {
     this.logger.debug(`Starting tripSearchV1 for destination=${destination}, from=${from}, location=${location}`);
 
     try {
+      //promise all settled
       const [flightResult, hotelResult] = await Promise.all([
         this.callWithTimeout<Flight[]>(flightServiceURL),
         this.callWithTimeout<Hotel[]>(hotelServiceURL),
