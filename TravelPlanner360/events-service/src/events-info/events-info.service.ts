@@ -1,4 +1,4 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventDTO } from '../DTO/EventDTO';
@@ -14,10 +14,20 @@ export class EventsInfoService {
   ) {}
 
   async createEvents(events: EventDTO[]): Promise<EventDTO[]> {
-    this.logger.log(`Creating ${events.length} events`);
+    this.logger.log(`Received request to create ${events.length} events`);
+
+    if (!Array.isArray(events) || events.length === 0) {
+      this.logger.warn('Empty or invalid events array received');
+      throw new BadRequestException('Event data cannot be empty');
+    }
+
     try {
+      this.logger.debug(`Creating event entities from DTOs`);
       const newEvents = this.eventRepository.create(events);
+
+      this.logger.debug('Saving new events to database');
       const savedEvents = await this.eventRepository.save(newEvents);
+
       this.logger.log(`Successfully created ${savedEvents.length} events`);
       return savedEvents;
     } catch (error) {
@@ -27,10 +37,17 @@ export class EventsInfoService {
   }
 
   async getAllEvents(): Promise<Event[]> {
-    this.logger.log('Fetching all events from database');
+    this.logger.log('Received request to fetch all events from database');
     try {
+      this.logger.debug('Executing find() on eventRepository');
       const events = await this.eventRepository.find();
-      this.logger.log(`Fetched ${events.length} events`);
+
+      if (events.length === 0) {
+        this.logger.warn('No events found in the database');
+      } else {
+        this.logger.log(`Fetched ${events.length} events successfully`);
+      }
+
       return events;
     } catch (error) {
       this.logger.error(`Failed to fetch events: ${error.message}`, error.stack);
