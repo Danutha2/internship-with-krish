@@ -10,7 +10,7 @@ export class FlightInfoController {
     }
 
     @Get('findByLocation')
-    getFlightInfoByLocation(@Query('destination') destination:string, @Query('from') from:string,@Query('departTime') departTime:Date){
+    getFlightInfoByLocation(@Query('destination') destination:string, @Query('from') from:string,@Query('departTime') departTime:string){
        return this.flightService.findByLocation(from,destination,departTime)
     }
     

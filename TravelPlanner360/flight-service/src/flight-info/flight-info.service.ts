@@ -1,6 +1,6 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Raw, Repository } from 'typeorm';
 import { Flight } from 'src/entity/entity.flight';
 import { flightInfo } from './flight-info.dto';
 
@@ -11,43 +11,52 @@ export class FlightInfoService {
   constructor(
     @InjectRepository(Flight)
     private readonly flightRepository: Repository<Flight>,
-  ) {}
+  ) { }
 
-  async findByLocation(from: string, destination: string, departTime: Date) {
-    this.logger.debug(
-      `Request received to search flights | from=${from}, destination=${destination}, departTime=${departTime}`,
-    );
+async findByLocation(from: string, destination: string, departTime: string) {
+  this.logger.debug(
+    `Request received to search flights | from=${from}, destination=${destination}, departTime=${departTime}`,
+  );
 
-    try {
-      const flights = await this.flightRepository.find({
-        where: {
-          from: from,
-          destination: destination,
-          departTime: departTime,
-        },
-      });
+  try {
+    const departDate = new Date(departTime); 
 
-      if (flights.length === 0) {
-        this.logger.warn(
-          `No flights found from=${from} to=${destination} at departTime=${departTime}`,
-        );
-      } else {
-        this.logger.log(
-          `Successfully found ${flights.length} flight(s) from=${from} to=${destination}`,
-        );
-      }
+    const start = new Date(departDate);
+    start.setHours(0, 0, 0, 0);
 
-      return flights;
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch flights | from=${from}, destination=${destination}, error=${error.message}`,
-        error.stack,
+    const end = new Date(departDate);
+    end.setHours(23, 59, 59, 999);
+
+    const flights = await this.flightRepository.find({
+      where: {
+        from,
+        destination,
+        departTime: Between(start, end),
+      },
+    });
+
+    if (flights.length === 0) {
+      this.logger.warn(
+        `No flights found from=${from} to=${destination} on ${departDate.toDateString()}`,
       );
-      throw new InternalServerErrorException(
-        'Failed to fetch flight information. Please try again later.',
+    } else {
+      this.logger.log(
+        `Successfully found ${flights.length} flight(s) from=${from} to=${destination} on ${departDate.toDateString()}`,
       );
     }
+
+    return flights;
+  } catch (error) {
+    this.logger.error(
+      `Failed to fetch flights | from=${from}, destination=${destination}, error=${error.message}`,
+      error.stack,
+    );
+    throw new InternalServerErrorException(
+      'Failed to fetch flight information. Please try again later.',
+    );
   }
+}
+
 
   async addFlightInfo(flightDTOs: flightInfo[]): Promise<flightInfo[]> {
     this.logger.log(
