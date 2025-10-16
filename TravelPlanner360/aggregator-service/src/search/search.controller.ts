@@ -14,14 +14,13 @@ export class SearchController {
     @Query('from') from: string,
     @Query('destination') destination: string,
     @Query('date') date: Date,
-    @Query('location') location: string,
   ) {
     SearchController.requestCount++;
     this.logger.log(
-      `V1 search endpoint hit | count=${SearchController.requestCount} | from=${from} | destination=${destination} | date=${date} | location=${location}`,
+      `V1 search endpoint hit | count=${SearchController.requestCount} | from=${from} | destination=${destination} | date=${date} `,
     );
 
-    const result = await this.sgService.tripSearchV1(destination, from, date, location);
+    const result = await this.sgService.tripSearchV1(destination, from, date);
 
     // Log degraded states for each service
     this.logger.warn(

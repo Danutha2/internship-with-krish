@@ -59,11 +59,11 @@ export class SearchService {
   }
 
   // ----------------- V1: Flights + Hotels -----------------
-  async tripSearchV1(destination: string, from: string, departtime: Date, location: string): Promise<TripResponseV1Dto> {
+  async tripSearchV1(destination: string, from: string, departtime: Date): Promise<TripResponseV1Dto> {
     const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departtime=${departtime}`;
-    const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${location}`;
+    const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${destination}`;
 
-    this.logger.debug(`Starting tripSearchV1 for destination=${destination}, from=${from}, location=${location}`);
+    this.logger.debug(`Starting tripSearchV1 for destination=${destination}, from=${from}`);
 
     try {
       //promise all settled
@@ -72,8 +72,8 @@ export class SearchService {
         this.callWithTimeout<Hotel[]>(hotelServiceURL),
       ]);
 
-      const matchedFlights = (flightResult.data ?? []).filter(f => f.destination === location);
-      const matchedHotels = (hotelResult.data ?? []).filter(h => h.location === location);
+      const matchedFlights = (flightResult.data ?? []).filter(f => f.destination === destination);
+      const matchedHotels = (hotelResult.data ?? []).filter(h => h.location === destination);
 
       this.logger.debug(
         `V1 results — Flights: ${matchedFlights.length}, Hotels: ${matchedHotels.length}, Degraded: flight=${flightResult.degraded}, hotel=${hotelResult.degraded}`
