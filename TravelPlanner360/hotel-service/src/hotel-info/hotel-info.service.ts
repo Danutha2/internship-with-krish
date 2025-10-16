@@ -52,7 +52,7 @@ async findHotelByLocation(location: string) {
       return hotels;
     } catch (error) {
       if (error instanceof NotFoundException) {
-        // Re-throw NotFoundException as is
+        
         throw error;
       }
     }

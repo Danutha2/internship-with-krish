@@ -60,7 +60,7 @@ export class SearchService {
 
   // ----------------- V1: Flights + Hotels -----------------
   async tripSearchV1(destination: string, from: string, departtime: Date): Promise<TripResponseV1Dto> {
-    const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departtime=${departtime}`;
+    const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departTime=${departtime}`;
     const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${destination}`;
 
     this.logger.debug(`Starting tripSearchV1 for destination=${destination}, from=${from}`);
