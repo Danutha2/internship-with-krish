@@ -1,8 +1,8 @@
 export class flightInfo{
     from:string
-    departTime:Date
+    departTime:string
     destination:string
-    arrivetime:Date
+    arrivetime:string
     price:number
     destinationType:destination
 

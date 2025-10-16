@@ -41,8 +41,8 @@ export class CheapestrouteService {
     this.logger.log(`Starting getCheapestRouteV1 — destination=${destination}, from=${from}, date=${date}`);
 
     try {
-      // Step 1: Get all flights
-      const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departtime=${date}`;
+      //Get all flights
+      const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departTime=${date}`;
       const flights: flightInfo[] = (await this.callService<flightInfo[]>(flightServiceURL)) ?? [];
       this.logger.log(`Flights fetched: ${flights.length}`);
 
@@ -59,9 +59,10 @@ export class CheapestrouteService {
       const defaultCheckInHour = 20;
       const arrivalHour = new Date(cheapestFlight.arrivetime).getHours();
       const needLateCheckIn = arrivalHour >= defaultCheckInHour;
+      this.logger.debug(`Need late check In ${needLateCheckIn}`)
 
       this.logger.log(`Arrival hour: ${arrivalHour}, needLateCheckIn=${needLateCheckIn}`);
-      const lateCheckInFlag = needLateCheckIn ? 0 : 1;
+      const lateCheckInFlag = needLateCheckIn ? 1 : 0;
 
       // Step 2: Fetch hotels based on lateCheckIn flag
       const hotelServiceURL = `http://localhost:3001/hotel-info/findLateCheckIn?location=${destination}&lateCheckIn=${lateCheckInFlag}`;
@@ -78,7 +79,7 @@ export class CheapestrouteService {
 
       if (lateCheckInFlag) {
         // Pick only hotels that allow late check-in
-        lateCheckInHotels = hotels.filter(hotel => hotel.lateCheckIn === true);
+        lateCheckInHotels = hotels.filter(hotel => hotel.lateCheckIn === needLateCheckIn);
         this.logger.log(`Late check-in hotels found: ${lateCheckInHotels.length}`);
       } else {
         // No filter, return all hotels
