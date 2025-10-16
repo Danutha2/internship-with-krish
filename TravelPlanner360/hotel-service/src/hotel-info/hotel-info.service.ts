@@ -14,51 +14,51 @@ export class HotelInfoService {
   ) {}
 
   async getAllHotelInfo() {
-    this.logger.log('Fetching all hotels from database');
+    this.logger.log('Fetching all hotels from database...');
     try {
       const hotels = await this.hotelRepository.find();
-      this.logger.log(`Fetched ${hotels.length} hotels`);
+      this.logger.log(`Fetched ${hotels.length} hotels successfully.`);
       return hotels;
     } catch (error) {
-      this.logger.error(`Failed to fetch hotels: ${error.message}`, error.stack);
+      this.logger.error(`Failed to fetch hotels: ${error.message}`);
       throw new InternalServerErrorException('Failed to fetch hotel information. Please try again later.');
     }
   }
 
   async createNewInfos(hotelDTOs: HotelDTO2LCI[]): Promise<HotelDTO2LCI[]> {
-    this.logger.log(`Creating ${hotelDTOs.length} new hotel entries`);
+    this.logger.log(`Creating ${hotelDTOs.length} new hotel entries...`);
     try {
       const hotels = this.hotelRepository.create(hotelDTOs);
       const savedHotels = await this.hotelRepository.save(hotels);
-      this.logger.log(`Successfully created ${savedHotels.length} hotels`);
+      this.logger.log(`Successfully created ${savedHotels.length} hotels.`);
       return savedHotels;
     } catch (error) {
-      this.logger.error(`Failed to create hotels: ${error.message}`, error.stack);
+      this.logger.error(`Failed to create hotels: ${error.message}`);
       throw new InternalServerErrorException('Failed to create hotel entries. Please try again later.');
     }
   }
 
   async findHotelByLocation(location: string) {
-    this.logger.log(`Searching hotels at location: ${location}`);
+    this.logger.debug(`Searching hotels at location: ${location}`);
     try {
       const hotels = await this.hotelRepository.find({ where: { location } });
-      this.logger.log(`Found ${hotels.length} hotels at location: ${location}`);
+      this.logger.debug(`Found ${hotels.length} hotel(s) at location: ${location}`);
       return hotels;
     } catch (error) {
-      this.logger.error(`Failed to fetch hotels at ${location}: ${error.message}`, error.stack);
+      this.logger.error(`Failed to fetch hotels at location=${location}: ${error.message}`);
       throw new InternalServerErrorException('Failed to fetch hotels by location. Please try again later.');
     }
   }
 
   async findByLateCheckIN(location: string, lateCheckIn: boolean) {
-    this.logger.log(`Searching hotels at location=${location} with lateCheckIn=${lateCheckIn}`);
+    this.logger.debug(`Searching hotels at location=${location} with lateCheckIn=${lateCheckIn}`);
     try {
       const hotels = await this.hotelRepository.find({ where: { location, lateCheckIn } });
-      this.logger.log(`Found ${hotels.length} hotels with lateCheckIn=${lateCheckIn} at location=${location}`);
+      this.logger.log(`Found ${hotels.length} hotel(s) with lateCheckIn=${lateCheckIn} at location=${location}`);
       return hotels;
     } catch (error) {
       this.logger.error(
-        `Failed to fetch hotels at ${location} with lateCheckIn=${lateCheckIn}: ${error.message}`,
+        `Failed to fetch hotels at location=${location} with lateCheckIn=${lateCheckIn}: ${error.message}`,
         error.stack,
       );
       throw new InternalServerErrorException('Failed to fetch hotels by late check-in. Please try again later.');
