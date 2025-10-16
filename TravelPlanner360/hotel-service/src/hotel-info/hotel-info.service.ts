@@ -1,4 +1,4 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Hotel } from 'src/entity/hotel.entity';
@@ -38,17 +38,26 @@ export class HotelInfoService {
     }
   }
 
-  async findHotelByLocation(location: string) {
-    this.logger.debug(`Searching hotels at location: ${location}`);
+async findHotelByLocation(location: string) {
+    this.logger.log(`Searching hotels at location: ${location}`);
     try {
       const hotels = await this.hotelRepository.find({ where: { location } });
-      this.logger.debug(`Found ${hotels.length} hotel(s) at location: ${location}`);
+
+      if (!hotels || hotels.length === 0) {
+        this.logger.warn(`No hotels found at location: ${location}`);
+        throw new NotFoundException(`No hotels found at location: ${location}`);
+      }
+
+      this.logger.log(`Found ${hotels.length} hotel(s) at location: ${location}`);
       return hotels;
     } catch (error) {
-      this.logger.error(`Failed to fetch hotels at location=${location}: ${error.message}`);
-      throw new InternalServerErrorException('Failed to fetch hotels by location. Please try again later.');
+      if (error instanceof NotFoundException) {
+        // Re-throw NotFoundException as is
+        throw error;
+      }
     }
   }
+
 
   async findByLateCheckIN(location: string, lateCheckIn: boolean) {
     this.logger.debug(`Searching hotels at location=${location} with lateCheckIn=${lateCheckIn}`);
