@@ -6,6 +6,8 @@ export class HotelDTO{
     pricePerNight:number
     location:string
     destinationType:destination
+    date:Date
+    checkInTime:number
 }
 
 export class HotelDTO2LCI{

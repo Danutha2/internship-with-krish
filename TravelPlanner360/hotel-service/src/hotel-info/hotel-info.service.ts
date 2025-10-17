@@ -11,7 +11,7 @@ export class HotelInfoService {
   constructor(
     @InjectRepository(Hotel)
     private readonly hotelRepository: Repository<Hotel>,
-  ) {}
+  ) { }
 
   async getAllHotelInfo() {
     this.logger.log('Fetching all hotels from database...');
@@ -38,7 +38,7 @@ export class HotelInfoService {
     }
   }
 
-async findHotelByLocation(location: string) {
+  async findHotelByLocation(location: string) {
     this.logger.log(`Searching hotels at location: ${location}`);
     try {
       const hotels = await this.hotelRepository.find({ where: { location } });
@@ -52,25 +52,50 @@ async findHotelByLocation(location: string) {
       return hotels;
     } catch (error) {
       if (error instanceof NotFoundException) {
-        
+
         throw error;
       }
     }
   }
 
 
-  async findByLateCheckIN(location: string, lateCheckIn: boolean) {
-    this.logger.debug(`Searching hotels at location=${location} with lateCheckIn=${lateCheckIn}`);
+  async findHotelsByLocationAndDate(location?: string, date?: Date) {
+    this.logger.log(`Searching hotels with filters - location: ${location}, date: ${date}`);
     try {
-      const hotels = await this.hotelRepository.find({ where: { location, lateCheckIn } });
-      this.logger.log(`Found ${hotels.length} hotel(s) with lateCheckIn=${lateCheckIn} at location=${location}`);
+      // Build dynamic where object
+      const where: any = {};
+      if (location) where.location = location;
+      if (date){
+        const departDate = new Date(date); 
+
+        const start = new Date(departDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(departDate);
+        end.setHours(23, 59, 59, 999);
+
+        where.date = departDate;
+
+      }  
+
+      const hotels = await this.hotelRepository.find({ where });
+
+      if (!hotels || hotels.length === 0) {
+        this.logger.warn(`No hotels found with the given filters - location: ${location}, date: ${date}`);
+        throw new NotFoundException(`No hotels found with the provided filters.`);
+      }
+
+      this.logger.log(`Found ${hotels.length} hotel(s) with the given filters.`);
       return hotels;
     } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+
       this.logger.error(
-        `Failed to fetch hotels at location=${location} with lateCheckIn=${lateCheckIn}: ${error.message}`,
-        error.stack,
+        `Failed to fetch hotels with filters - location: ${location}, date: ${date}: ${error.message}`,
+        error.stack
       );
-      throw new InternalServerErrorException('Failed to fetch hotels by late check-in. Please try again later.');
+      throw new InternalServerErrorException('Failed to fetch hotels. Please try again later.');
     }
   }
+
 }

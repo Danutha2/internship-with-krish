@@ -27,10 +27,10 @@ export class HotelInfoController {
 
   //This wil query based on location and last check in
   @Get('findLateCheckIn')
-  findByLateCheckIN(@Query('location') location: string,@Query('lateCheckIn') lateCheckIn: boolean) {
+  findByLateCheckIN(@Query('location') location: string,@Query('date') date: Date) {
     
 
-    return this.hotelInfoService.findByLateCheckIN(location,lateCheckIn)
+    return this.hotelInfoService.findHotelsByLocationAndDate(location,date)
   }
 
 }

@@ -16,6 +16,10 @@ export class Hotel {
     destinationType: destination
     @Column({ type: 'boolean' })
     lateCheckIn: boolean;
+    @Column()
+    date:Date
+    @Column()
+    checkInTime:number
 }
 
 export enum destination {
