@@ -118,12 +118,12 @@ export class SearchService {
   }
 
   // ----------------- V2: Flights + Hotels + Weather -----------------
-  async tripSearchV2(destination: string, from: string, departtime: Date, location: string): Promise<TripResponseV2Dto> {
-    const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departtime=${departtime}`;
-    const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${location}`;
-    const weatherServiceURL = `http://localhost:3004/weather-info/getInfo?location=${location}`;
+  async tripSearchV2(destination: string, from: string, departtime: Date): Promise<TripResponseV2Dto> {
+    const flightServiceURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departTime=${departtime}`;
+    const hotelServiceURL = `http://localhost:3001/hotel-info/findByLocation?location=${destination}`;
+    const weatherServiceURL = `http://localhost:3004/weather-info/getInfo?location=${destination}`;
 
-    this.logger.debug(`Starting tripSearchV2 for destination=${destination}, from=${from}, location=${location}`);
+    this.logger.debug(`Starting tripSearchV2 for destination=${destination}, from=${from}, location=${destination}`);
 
     try {
       const [flightResult, hotelResult, weatherResult] = await Promise.all([
@@ -133,9 +133,10 @@ export class SearchService {
         this.weatherBreaker.exec(() => this.callWeatherService(weatherServiceURL)),
       ]);
 
-      const matchedFlights = (flightResult.data ?? []).filter(f => f.destination === location);
-      const matchedHotels = (hotelResult.data ?? []).filter(h => h.location === location);
+      const matchedFlights = (flightResult.data ?? []).filter(f => f.destination === destination);
+      const matchedHotels = (hotelResult.data ?? []).filter(h => h.location === destination);
 
+      this.logger.debug(weatherResult)
       const weatherInfo: Weather[] = weatherResult ?? [];
       const weatherDegraded = weatherInfo.some(w => (w as any).degraded === true);
 

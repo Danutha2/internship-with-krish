@@ -13,4 +13,6 @@ export class Weather{
     tempMax:number
     @Column()
     condition:string
+    @Column()
+    location:string
 }

@@ -3,4 +3,5 @@ export class WeatherDTO{
     tempMin:number
     tempMax:number
     condition:string
+    location:string
 }

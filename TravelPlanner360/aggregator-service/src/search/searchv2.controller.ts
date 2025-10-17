@@ -14,14 +14,13 @@ export class Searchv2Controller {
     @Query('from') from: string,
     @Query('destination') destination: string,
     @Query('date') date: Date,
-    @Query('location') location: string,
   ) {
     // Increment hit count
     Searchv2Controller.requestCountV2++;
 
     const startTime = Date.now();
     try {
-      const result = await this.searchService.tripSearchV2(destination, from, date, location);
+      const result = await this.searchService.tripSearchV2(destination, from, date);
       const duration = Date.now() - startTime;
 
       // Log completion with duration

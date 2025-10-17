@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { WeatherInfoService } from './weather-info.service';
 import { WeatherDTO } from '../DTO/weather.dto';
 import { delay } from 'rxjs';
+import { dateTimestampProvider } from 'rxjs/internal/scheduler/dateTimestampProvider';
 
 @Controller('weather-info')
 export class WeatherInfoController {
@@ -13,9 +14,9 @@ export class WeatherInfoController {
    */
   @Get('getInfo')
   getWeatherInfo(
-    @Query('date') date: Date, // Expecting ISO string
-  ){
-    return this.weatherInfoService.getWeather();
+    @Query('location') location:string
+  ){ 
+    return this.weatherInfoService.getWeather(location);
   }
 
   @Post('create')
