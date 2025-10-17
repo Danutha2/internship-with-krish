@@ -15,5 +15,9 @@ export class Event {
     @Column({
         enum: EventCategory
     })
+
+    @Column()
+    destination:string
+    
     category: EventCategory;
 }

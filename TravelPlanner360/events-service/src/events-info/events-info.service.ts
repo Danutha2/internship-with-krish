@@ -11,7 +11,7 @@ export class EventsInfoService {
   constructor(
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
-  ) {}
+  ) { }
 
   async createEvents(events: EventDTO[]): Promise<EventDTO[]> {
     this.logger.log(`Received request to create ${events.length} events`);
@@ -36,11 +36,16 @@ export class EventsInfoService {
     }
   }
 
-  async getAllEvents(): Promise<Event[]> {
+  async getEvents(date: Date, destination: string): Promise<Event[]> {
     this.logger.log('Received request to fetch all events from database');
     try {
       this.logger.debug('Executing find() on eventRepository');
-      const events = await this.eventRepository.find();
+      const events = await this.eventRepository.find({
+        where: {
+          date,
+          destination
+        }
+      });
 
       if (events.length === 0) {
         this.logger.warn('No events found in the database');

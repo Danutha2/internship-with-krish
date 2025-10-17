@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { EventsInfoService } from './events-info.service';
 import { EventDTO } from 'src/DTO/EventDTO';
 
@@ -8,8 +8,8 @@ export class EventsInfoController {
 
     }
     @Get('all')
-    getAllEventsInfo(){
-        return this.eventsService.getAllEvents()
+    getEventsInfo(@Query('date') date:Date,@Query('destination') destination:string){
+        return this.eventsService.getEvents(date,destination)
     }
 
     @Post('create')

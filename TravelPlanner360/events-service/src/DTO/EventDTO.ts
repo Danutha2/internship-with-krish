@@ -2,6 +2,7 @@ export class EventDTO{
     name:string
     date:Date
     category:EventCategory
+    destination:string
 }
 
 export enum EventCategory {

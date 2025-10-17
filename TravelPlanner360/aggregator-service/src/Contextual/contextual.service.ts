@@ -42,7 +42,7 @@ export class ContextualService {
 
     try {
       // Step 1: Fetch flights
-      const flightURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departtime=${date}`;
+      const flightURL = `http://localhost:3000/flight-info/findByLocation?destination=${destination}&from=${from}&departTime=${date}`;
       const flights: flightInfo[] = (await this.callService<flightInfo[]>(flightURL)) ?? [];
       this.logger.log(`Flights fetched: ${flights.length}`);
 
@@ -56,7 +56,7 @@ export class ContextualService {
       const isCoastal = hotels.some(hotel => hotel.destinationType === 'COASTAL');
 
       if (isCoastal) {
-        const eventsURL = `http://localhost:3003/events-info/all`;
+        const eventsURL = `http://localhost:3003/events-info/all?date=${date}&destination=${destination}`;
         this.logger.log(`Destination is coastal. Fetching events from: ${eventsURL}`);
         events = (await this.callService<EventDTO[]>(eventsURL)) ?? [];
         this.logger.log(`Events fetched: ${events.length}`);
